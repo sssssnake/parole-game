@@ -13,7 +13,9 @@ Endpoints:
   GET /trigger?quiz=1    → toggle quiz mode
   GET /trigger?music=1   → toggle music
   GET /trigger?skip=1    → next song
-  GET /trigger?word=N    → tap word N  (0-7)
+  GET /trigger?word=N    → tap word N  (0-9)
+  GET /trigger?catprev=1 → previous category
+  GET /trigger?catnext=1 → next category
 """
 import http.server, socketserver, threading, queue, json, os, sys
 from urllib.parse import urlparse, parse_qs
@@ -100,7 +102,9 @@ class Handler(http.server.BaseHTTPRequestHandler):
             elif 'quiz'  in params: broadcast({'type': 'quiz'})
             elif 'music' in params: broadcast({'type': 'music'})
             elif 'skip'  in params: broadcast({'type': 'skip'})
-            elif 'word'  in params: broadcast({'type': 'word', 'idx': int(params['word'][0])})
+            elif 'word'    in params: broadcast({'type': 'word', 'idx': int(params['word'][0])})
+            elif 'catprev' in params: broadcast({'type': 'catprev'})
+            elif 'catnext' in params: broadcast({'type': 'catnext'})
 
         else:
             self.send_error(404)

@@ -244,23 +244,28 @@ canvas {
   box-shadow: 0 4px 20px rgba(0,0,0,0.25);
 }
 
-/* === WORD GRID === */
+/* === WORD GRID  (5 × 2 — matches Stream Deck rows 0-1) === */
 .word-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
-  padding: 4px 20px 24px;
-  max-width: 900px;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  padding: 4px 16px 24px;
+  max-width: 1060px;
   margin: 0 auto;
   position: relative;
   z-index: 10;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 700px) {
+  .word-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    padding: 4px 10px 24px;
+  }
+}
+@media (max-width: 450px) {
   .word-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-    padding: 4px 12px 24px;
   }
 }
 
@@ -285,8 +290,10 @@ canvas {
 .word-card:nth-child(4) { animation-delay: 1.2s; }
 .word-card:nth-child(5) { animation-delay: 1.6s; }
 .word-card:nth-child(6) { animation-delay: 2.0s; }
-.word-card:nth-child(7) { animation-delay: 2.4s; }
-.word-card:nth-child(8) { animation-delay: 2.8s; }
+.word-card:nth-child(7)  { animation-delay: 2.4s; }
+.word-card:nth-child(8)  { animation-delay: 2.8s; }
+.word-card:nth-child(9)  { animation-delay: 3.2s; }
+.word-card:nth-child(10) { animation-delay: 3.6s; }
 
 @keyframes idleWobble {
   0%, 100% { transform: rotate(0deg) scale(1); }
@@ -553,21 +560,23 @@ async function speakBothLanguages(itText, enText, card) {
 }
 
 // ============================================================
-//  CATEGORY & WORD DATA  (6 categories, 8 words each)
+//  CATEGORY & WORD DATA  (6 categories, 10 words each — 5×2 grid)
 // ============================================================
 const categories = [
   {
     name: 'Animali', nameEn: 'Animals', icon: '\u{1F43E}',
     bgHue: 130, color: '#27ae60', colorDark: '#1e8449',
     words: [
-      { emoji: '\u{1F436}', it: 'Cane',    en: 'Dog',   itArt: 'il' },
-      { emoji: '\u{1F431}', it: 'Gatto',   en: 'Cat',   itArt: 'il' },
-      { emoji: '\u{1F41F}', it: 'Pesce',   en: 'Fish',  itArt: 'il' },
-      { emoji: '\u{1F426}', it: 'Uccello', en: 'Bird',  itArt: "l'" },
-      { emoji: '\u{1F43B}', it: 'Orso',    en: 'Bear',  itArt: "l'" },
-      { emoji: '\u{1F434}', it: 'Cavallo', en: 'Horse', itArt: 'il' },
-      { emoji: '\u{1F437}', it: 'Maiale',  en: 'Pig',   itArt: 'il' },
-      { emoji: '\u{1F438}', it: 'Rana',    en: 'Frog',  itArt: 'la' },
+      { emoji: '\u{1F436}', it: 'Cane',      en: 'Dog',       itArt: 'il' },
+      { emoji: '\u{1F431}', it: 'Gatto',     en: 'Cat',       itArt: 'il' },
+      { emoji: '\u{1F41F}', it: 'Pesce',     en: 'Fish',      itArt: 'il' },
+      { emoji: '\u{1F426}', it: 'Uccello',   en: 'Bird',      itArt: "l'" },
+      { emoji: '\u{1F43B}', it: 'Orso',      en: 'Bear',      itArt: "l'" },
+      { emoji: '\u{1F434}', it: 'Cavallo',   en: 'Horse',     itArt: 'il' },
+      { emoji: '\u{1F437}', it: 'Maiale',    en: 'Pig',       itArt: 'il' },
+      { emoji: '\u{1F438}', it: 'Rana',      en: 'Frog',      itArt: 'la' },
+      { emoji: '\u{1F430}', it: 'Coniglio',  en: 'Rabbit',    itArt: 'il' },
+      { emoji: '\u{1F98B}', it: 'Farfalla',  en: 'Butterfly', itArt: 'la' },
     ]
   },
   {
@@ -582,6 +591,8 @@ const categories = [
       { emoji: '\u{1F7E3}', it: 'Viola',     en: 'Purple', itArt: 'il' },
       { emoji: '\u26AA',    it: 'Bianco',    en: 'White',  itArt: 'il' },
       { emoji: '\u26AB',    it: 'Nero',      en: 'Black',  itArt: 'il' },
+      { emoji: '\u{1F7E4}', it: 'Marrone',   en: 'Brown',  itArt: 'il' },
+      { emoji: '\u{1FA77}', it: 'Rosa',      en: 'Pink',   itArt: 'il' },
     ]
   },
   {
@@ -596,20 +607,24 @@ const categories = [
       { emoji: '6\uFE0F\u20E3', it: 'Sei',     en: 'Six',   itArt: 'il' },
       { emoji: '7\uFE0F\u20E3', it: 'Sette',   en: 'Seven', itArt: 'il' },
       { emoji: '8\uFE0F\u20E3', it: 'Otto',    en: 'Eight', itArt: "l'" },
+      { emoji: '9\uFE0F\u20E3', it: 'Nove',    en: 'Nine',  itArt: 'il' },
+      { emoji: '\u{1F51F}',     it: 'Dieci',   en: 'Ten',   itArt: 'il' },
     ]
   },
   {
     name: 'Cibo', nameEn: 'Food', icon: '\u{1F34E}',
     bgHue: 30, color: '#e67e22', colorDark: '#d35400',
     words: [
-      { emoji: '\u{1F34E}', it: 'Mela',      en: 'Apple',      itArt: 'la' },
-      { emoji: '\u{1F34C}', it: 'Banana',    en: 'Banana',     itArt: 'la' },
-      { emoji: '\u{1F355}', it: 'Pizza',     en: 'Pizza',      itArt: 'la' },
-      { emoji: '\u{1F9C0}', it: 'Formaggio', en: 'Cheese',     itArt: 'il' },
-      { emoji: '\u{1F35E}', it: 'Pane',      en: 'Bread',      itArt: 'il' },
-      { emoji: '\u{1F95B}', it: 'Latte',     en: 'Milk',       itArt: 'il' },
-      { emoji: '\u{1F353}', it: 'Fragola',   en: 'Strawberry', itArt: 'la' },
-      { emoji: '\u{1F366}', it: 'Gelato',    en: 'Ice Cream',  itArt: 'il' },
+      { emoji: '\u{1F34E}', it: 'Mela',       en: 'Apple',      itArt: 'la' },
+      { emoji: '\u{1F34C}', it: 'Banana',     en: 'Banana',     itArt: 'la' },
+      { emoji: '\u{1F355}', it: 'Pizza',      en: 'Pizza',      itArt: 'la' },
+      { emoji: '\u{1F9C0}', it: 'Formaggio',  en: 'Cheese',     itArt: 'il' },
+      { emoji: '\u{1F35E}', it: 'Pane',       en: 'Bread',      itArt: 'il' },
+      { emoji: '\u{1F95B}', it: 'Latte',      en: 'Milk',       itArt: 'il' },
+      { emoji: '\u{1F353}', it: 'Fragola',    en: 'Strawberry', itArt: 'la' },
+      { emoji: '\u{1F366}', it: 'Gelato',     en: 'Ice Cream',  itArt: 'il' },
+      { emoji: '\u{1F35D}', it: 'Pasta',      en: 'Pasta',      itArt: 'la' },
+      { emoji: '\u{1F36B}', it: 'Cioccolato', en: 'Chocolate',  itArt: 'il' },
     ]
   },
   {
@@ -624,6 +639,8 @@ const categories = [
       { emoji: '\u{1F9B6}', it: 'Piede',     en: 'Foot',  itArt: 'il' },
       { emoji: '\u2764\uFE0F', it: 'Cuore',  en: 'Heart', itArt: 'il' },
       { emoji: '\u{1F60A}', it: 'Faccia',    en: 'Face',  itArt: 'la' },
+      { emoji: '\u{1F4AA}', it: 'Braccio',   en: 'Arm',   itArt: 'il' },
+      { emoji: '\u{1F9B5}', it: 'Gamba',     en: 'Leg',   itArt: 'la' },
     ]
   },
   {
@@ -638,6 +655,8 @@ const categories = [
       { emoji: '\u{1F475}', it: 'Nonna',    en: 'Grandma', itArt: 'la' },
       { emoji: '\u{1F474}', it: 'Nonno',    en: 'Grandpa', itArt: 'il' },
       { emoji: '\u{1F3E0}', it: 'Casa',     en: 'Home',    itArt: 'la' },
+      { emoji: '\u{1F46B}', it: 'Amico',    en: 'Friend',  itArt: "l'" },
+      { emoji: '\u{1F495}', it: 'Amore',    en: 'Love',    itArt: "l'" },
     ]
   },
 ];
@@ -714,7 +733,8 @@ buildGrid();
 //  SWITCH CATEGORY
 // ============================================================
 function switchCategory(idx) {
-  if (idx === currentCategory) return;
+  if (idx < 0 || idx >= categories.length) return;
+  const changed = idx !== currentCategory;
   currentCategory = idx;
   currentWordIdx = -1;
 
@@ -1449,11 +1469,17 @@ if (window.location.hostname === 'localhost' || window.location.hostname === '12
             advanceSong();
             break;
           case 'word':
-            // Directly tap a specific word by index
+            // Directly tap a specific word by index (matches Stream Deck rows 0-1)
             if (msg.idx >= 0 && msg.idx < categories[currentCategory].words.length) {
               const w = categories[currentCategory].words[msg.idx];
               onWordTap(cards[msg.idx], w, msg.idx);
             }
+            break;
+          case 'catprev':
+            switchCategory((currentCategory - 1 + categories.length) % categories.length);
+            break;
+          case 'catnext':
+            switchCategory((currentCategory + 1) % categories.length);
             break;
         }
       } catch (_) {}
