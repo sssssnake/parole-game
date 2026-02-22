@@ -1,0 +1,1471 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+<title>Parole Magiche ✨ - Impara con me!</title>
+<style>
+/* === CSS VARIABLES === */
+:root {
+  --bg-hue: 260;
+  --bg-sat: 75%;
+  --bg-light: 90%;
+}
+
+/* === RESET === */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Segoe UI', 'SF Pro', 'Helvetica Neue', Arial, sans-serif;
+  background: hsl(var(--bg-hue), var(--bg-sat), var(--bg-light));
+  min-height: 100vh;
+  overflow-x: hidden;
+  transition: background 0.8s ease;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: default;
+}
+
+/* === CANVASES === */
+canvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+#particle-canvas { z-index: 100; }
+
+/* === TITLE BANNER === */
+.title-banner {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  padding: 18px 16px 6px;
+}
+
+.wand-container {
+  font-size: clamp(44px, 10vw, 76px);
+  animation: floatWand 3s ease-in-out infinite;
+  display: inline-block;
+  filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.15));
+}
+
+@keyframes floatWand {
+  0%, 100% { transform: rotate(-8deg) translateY(0); }
+  50% { transform: rotate(8deg) translateY(-8px); }
+}
+
+.title-banner h1 {
+  font-size: clamp(24px, 6vw, 48px);
+  font-weight: 900;
+  background: linear-gradient(90deg, #ff6b6b, #ffa500, #ffd93d, #6bcb77, #4d96ff, #9b59b6, #ff6b9d);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: rainbowShift 4s linear infinite;
+  line-height: 1.2;
+  margin-top: -4px;
+}
+
+@keyframes rainbowShift {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+.subtitle {
+  font-size: clamp(11px, 2.5vw, 16px);
+  font-weight: 700;
+  color: rgba(0,0,0,0.4);
+  margin-top: 2px;
+}
+
+/* === CONTROLS === */
+.controls {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  padding: 10px 16px 8px;
+  position: relative;
+  z-index: 10;
+  flex-wrap: wrap;
+}
+
+.ctrl-btn {
+  font-size: clamp(14px, 3.5vw, 20px);
+  font-weight: 800;
+  border: none;
+  border-radius: 50px;
+  padding: 10px 22px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.ctrl-btn:active { transform: scale(0.93); }
+
+.btn-music {
+  background: linear-gradient(135deg, #ff6b9d, #c44dff);
+}
+.btn-music.playing {
+  animation: pulseBtn 0.6s ease-in-out infinite alternate;
+}
+
+.btn-quiz {
+  background: linear-gradient(135deg, #ffd93d, #ff9a00);
+}
+.btn-quiz.active {
+  animation: pulseBtn 0.6s ease-in-out infinite alternate;
+  box-shadow: 0 4px 20px rgba(255, 154, 0, 0.6);
+}
+
+.btn-skip {
+  background: linear-gradient(135deg, #f7971e, #ffd200);
+  padding: 10px 16px;
+}
+
+@keyframes pulseBtn {
+  from { box-shadow: 0 4px 15px rgba(196, 77, 255, 0.4); }
+  to { box-shadow: 0 4px 30px rgba(196, 77, 255, 0.8); transform: scale(1.04); }
+}
+
+.btn-icon { font-size: 1.2em; }
+
+/* === SONG LABEL === */
+.song-label {
+  text-align: center;
+  position: relative;
+  z-index: 10;
+  margin: -4px 0 4px;
+  font-size: clamp(11px, 2.2vw, 14px);
+  font-weight: 700;
+  color: rgba(0,0,0,0.4);
+  min-height: 1.3em;
+  transition: opacity 0.4s;
+}
+.song-label.hidden { opacity: 0; }
+
+/* === QUIZ BANNER === */
+.quiz-banner {
+  position: relative;
+  z-index: 20;
+  text-align: center;
+  padding: 12px 20px;
+  margin: 4px 20px 8px;
+  background: linear-gradient(135deg, #ffd93d, #ff9a00);
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(255, 154, 0, 0.3);
+  font-size: clamp(18px, 5vw, 32px);
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 1px 2px 0 rgba(0,0,0,0.15);
+  animation: quizPulse 2s ease-in-out infinite;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.quiz-banner.hidden { display: none; }
+
+@keyframes quizPulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 4px 20px rgba(255, 154, 0, 0.3); }
+  50% { transform: scale(1.02); box-shadow: 0 6px 30px rgba(255, 154, 0, 0.5); }
+}
+
+/* === CELEBRATION OVERLAY === */
+.celebration {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.celebration.show { opacity: 1; }
+.celebration-text {
+  font-size: clamp(60px, 18vw, 140px);
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 4px 6px 0 rgba(0,0,0,0.2);
+  animation: celebBounce 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes celebBounce {
+  0% { transform: scale(0); }
+  50% { transform: scale(1.3) rotate(-5deg); }
+  70% { transform: scale(0.9) rotate(3deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+
+/* === CATEGORY TABS === */
+.category-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 6px 16px 12px;
+  position: relative;
+  z-index: 10;
+  flex-wrap: wrap;
+}
+
+.cat-tab {
+  font-size: clamp(12px, 3vw, 17px);
+  font-weight: 800;
+  border: none;
+  border-radius: 50px;
+  padding: 8px 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: transform 0.2s, box-shadow 0.2s, opacity 0.3s;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.12);
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.65;
+}
+
+.cat-tab:active { transform: scale(0.93); }
+
+.cat-tab.active {
+  opacity: 1;
+  transform: scale(1.08);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+}
+
+/* === WORD GRID === */
+.word-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  padding: 4px 20px 24px;
+  max-width: 900px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 10;
+}
+
+@media (max-width: 600px) {
+  .word-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    padding: 4px 12px 24px;
+  }
+}
+
+/* === WORD CARD === */
+.word-card {
+  background: rgba(255,255,255,0.88);
+  border-radius: 22px;
+  padding: 14px 8px 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s, border-color 0.3s;
+  box-shadow: 0 5px 18px rgba(0,0,0,0.1), inset 0 2px 0 rgba(255,255,255,0.8);
+  position: relative;
+  overflow: visible;
+  animation: idleWobble 4s ease-in-out infinite;
+  border: 3px solid rgba(255,255,255,0.6);
+}
+
+.word-card:nth-child(1) { animation-delay: 0s; }
+.word-card:nth-child(2) { animation-delay: 0.4s; }
+.word-card:nth-child(3) { animation-delay: 0.8s; }
+.word-card:nth-child(4) { animation-delay: 1.2s; }
+.word-card:nth-child(5) { animation-delay: 1.6s; }
+.word-card:nth-child(6) { animation-delay: 2.0s; }
+.word-card:nth-child(7) { animation-delay: 2.4s; }
+.word-card:nth-child(8) { animation-delay: 2.8s; }
+
+@keyframes idleWobble {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(-1.2deg) scale(1.01); }
+  75% { transform: rotate(1.2deg) scale(1.01); }
+}
+
+.word-card:active { animation: none; }
+
+.word-card.bounce {
+  animation: bounceCard 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes bounceCard {
+  0% { transform: scale(1); }
+  20% { transform: scale(0.85); }
+  40% { transform: scale(1.2) rotate(-3deg); }
+  60% { transform: scale(0.95) rotate(2deg); }
+  80% { transform: scale(1.08); }
+  100% { transform: scale(1) rotate(0); }
+}
+
+/* Active / highlighted card (Stream Deck navigation) */
+.word-card.active-word {
+  border-color: #ffd93d;
+  box-shadow: 0 0 0 4px rgba(255, 217, 61, 0.5), 0 6px 24px rgba(0,0,0,0.15);
+  animation: glowCard 1.5s ease-in-out infinite;
+}
+
+@keyframes glowCard {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(255, 217, 61, 0.4), 0 6px 24px rgba(0,0,0,0.15); }
+  50% { box-shadow: 0 0 0 8px rgba(255, 217, 61, 0.6), 0 6px 30px rgba(0,0,0,0.2); }
+}
+
+/* Quiz mode: wrong answer wiggle */
+.word-card.wrong {
+  animation: wiggleWrong 0.5s ease;
+}
+
+@keyframes wiggleWrong {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-10px); }
+  40% { transform: translateX(10px); }
+  60% { transform: translateX(-6px); }
+  80% { transform: translateX(6px); }
+}
+
+/* Quiz mode: correct answer celebration */
+.word-card.correct {
+  animation: celebCard 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border-color: #6bcb77;
+  box-shadow: 0 0 0 6px rgba(107, 203, 119, 0.5), 0 8px 30px rgba(0,0,0,0.2);
+}
+
+@keyframes celebCard {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.25) rotate(-5deg); }
+  60% { transform: scale(0.95) rotate(3deg); }
+  100% { transform: scale(1.1) rotate(0); }
+}
+
+/* Deal-in animation for category switch */
+.word-card.dealing {
+  animation: dealCard 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+}
+
+@keyframes dealCard {
+  from { opacity: 0; transform: scale(0.4) translateY(40px) rotate(-5deg); }
+  to { opacity: 1; transform: scale(1) translateY(0) rotate(0); }
+}
+
+.word-emoji {
+  font-size: clamp(48px, 12vw, 80px);
+  line-height: 1.1;
+  display: block;
+  filter: drop-shadow(2px 3px 4px rgba(0,0,0,0.12));
+  transition: transform 0.3s;
+}
+
+.word-card.bounce .word-emoji {
+  animation: emojiJump 0.6s ease;
+}
+
+@keyframes emojiJump {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  30% { transform: translateY(-12px) rotate(-8deg); }
+  60% { transform: translateY(-4px) rotate(5deg); }
+}
+
+.word-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: clamp(13px, 3vw, 19px);
+  font-weight: 800;
+  margin-top: 4px;
+  line-height: 1.3;
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+.word-label .flag {
+  font-size: 0.85em;
+  transition: transform 0.3s;
+}
+
+.word-label .flag.speaking {
+  animation: flagPulse 0.4s ease-in-out infinite alternate;
+}
+
+@keyframes flagPulse {
+  from { transform: scale(1); }
+  to { transform: scale(1.3); }
+}
+
+.word-label-it { color: #27ae60; }
+.word-label-en { color: #2980b9; }
+
+/* Quiz mode: hide words */
+.word-card.quiz-hidden .word-label {
+  opacity: 0;
+  transform: scale(0.8);
+}
+.word-card.quiz-hidden .word-mystery {
+  display: flex;
+}
+
+.word-mystery {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(16px, 4vw, 24px);
+  font-weight: 900;
+  color: rgba(0,0,0,0.2);
+  letter-spacing: 4px;
+  margin-top: 4px;
+  min-height: 2.6em;
+}
+
+/* === FOOTER === */
+.footer {
+  text-align: center;
+  padding: 8px 16px 20px;
+  position: relative;
+  z-index: 10;
+  color: rgba(0,0,0,0.3);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* === SCROLLBAR === */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+<canvas id="particle-canvas"></canvas>
+
+<div class="title-banner">
+  <div class="wand-container">&#x1FA84;</div>
+  <h1>Parole Magiche &#x2728;</h1>
+  <p class="subtitle">Impara con me! &bull; Learn with me!</p>
+</div>
+
+<div id="yt-player" style="position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;"></div>
+
+<div class="controls">
+  <button class="ctrl-btn btn-music" id="musicBtn" aria-label="Musica">
+    <span class="btn-icon">&#x1F3B5;</span> Musica
+  </button>
+  <button class="ctrl-btn btn-skip" id="skipBtn" aria-label="Prossima canzone" style="display:none;">
+    <span class="btn-icon">&#x23ED;&#xFE0F;</span>
+  </button>
+  <button class="ctrl-btn btn-quiz" id="quizBtn" aria-label="Quiz mode">
+    <span class="btn-icon">&#x1F9E9;</span> Quiz
+  </button>
+</div>
+<div class="song-label hidden" id="songLabel">&#x1F3B5;</div>
+
+<div class="quiz-banner hidden" id="quizBanner">
+  <span id="quizPrompt"></span>
+</div>
+
+<div class="category-tabs" id="categoryTabs"></div>
+
+<div class="word-grid" id="wordGrid"></div>
+
+<div class="celebration" id="celebration">
+  <div class="celebration-text" id="celebText"></div>
+</div>
+
+<div class="footer">
+  &#x2728; Impariamo insieme! &bull; Let's learn together! &#x2728;
+</div>
+
+<script>
+// ============================================================
+//  AUDIO CONTEXT (lazy-init on first user gesture)
+// ============================================================
+let audioCtx = null;
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+// ============================================================
+//  WEB SPEECH SYNTHESIS — real spoken words
+// ============================================================
+let voices = [];
+let itVoice = null;
+let enVoice = null;
+
+function loadVoices() {
+  voices = speechSynthesis.getVoices();
+  if (!voices.length) return;
+  // Prefer high-quality macOS / iOS voices
+  itVoice = voices.find(v => v.lang === 'it-IT' && /luca|alice|federica/i.test(v.name)) ||
+            voices.find(v => v.lang === 'it-IT' && v.localService) ||
+            voices.find(v => v.lang === 'it-IT') ||
+            voices.find(v => v.lang.startsWith('it'));
+  enVoice = voices.find(v => v.lang === 'en-US' && /samantha|alex|karen/i.test(v.name)) ||
+            voices.find(v => v.lang === 'en-US' && v.localService) ||
+            voices.find(v => v.lang === 'en-US') ||
+            voices.find(v => v.lang.startsWith('en'));
+}
+
+speechSynthesis.addEventListener('voiceschanged', loadVoices);
+loadVoices();
+
+function speakWord(text, lang) {
+  return new Promise(resolve => {
+    speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = lang;
+    utter.voice = lang.startsWith('it') ? itVoice : enVoice;
+    utter.rate = 0.82;
+    utter.pitch = 1.1;
+    utter.volume = 1.0;
+    utter.onend = resolve;
+    utter.onerror = resolve;
+    // Chrome workaround: speech can freeze if we don't add a small delay
+    setTimeout(() => speechSynthesis.speak(utter), 50);
+  });
+}
+
+// Speak both languages in sequence with a pause between
+async function speakBothLanguages(itText, enText, card) {
+  const itFlag = card ? card.querySelector('.flag-it') : null;
+  const enFlag = card ? card.querySelector('.flag-en') : null;
+
+  if (itFlag) itFlag.classList.add('speaking');
+  await speakWord(itText, 'it-IT');
+  if (itFlag) itFlag.classList.remove('speaking');
+
+  await new Promise(r => setTimeout(r, 350));
+
+  if (enFlag) enFlag.classList.add('speaking');
+  await speakWord(enText, 'en-US');
+  if (enFlag) enFlag.classList.remove('speaking');
+}
+
+// ============================================================
+//  CATEGORY & WORD DATA  (6 categories, 8 words each)
+// ============================================================
+const categories = [
+  {
+    name: 'Animali', nameEn: 'Animals', icon: '\u{1F43E}',
+    bgHue: 130, color: '#27ae60', colorDark: '#1e8449',
+    words: [
+      { emoji: '\u{1F436}', it: 'Cane',    en: 'Dog',   itArt: 'il' },
+      { emoji: '\u{1F431}', it: 'Gatto',   en: 'Cat',   itArt: 'il' },
+      { emoji: '\u{1F41F}', it: 'Pesce',   en: 'Fish',  itArt: 'il' },
+      { emoji: '\u{1F426}', it: 'Uccello', en: 'Bird',  itArt: "l'" },
+      { emoji: '\u{1F43B}', it: 'Orso',    en: 'Bear',  itArt: "l'" },
+      { emoji: '\u{1F434}', it: 'Cavallo', en: 'Horse', itArt: 'il' },
+      { emoji: '\u{1F437}', it: 'Maiale',  en: 'Pig',   itArt: 'il' },
+      { emoji: '\u{1F438}', it: 'Rana',    en: 'Frog',  itArt: 'la' },
+    ]
+  },
+  {
+    name: 'Colori', nameEn: 'Colors', icon: '\u{1F3A8}',
+    bgHue: 0, color: '#e74c3c', colorDark: '#c0392b',
+    words: [
+      { emoji: '\u{1F534}', it: 'Rosso',     en: 'Red',    itArt: 'il' },
+      { emoji: '\u{1F535}', it: 'Blu',       en: 'Blue',   itArt: 'il' },
+      { emoji: '\u{1F7E2}', it: 'Verde',     en: 'Green',  itArt: 'il' },
+      { emoji: '\u{1F7E1}', it: 'Giallo',    en: 'Yellow', itArt: 'il' },
+      { emoji: '\u{1F7E0}', it: 'Arancione', en: 'Orange', itArt: "l'" },
+      { emoji: '\u{1F7E3}', it: 'Viola',     en: 'Purple', itArt: 'il' },
+      { emoji: '\u26AA',    it: 'Bianco',    en: 'White',  itArt: 'il' },
+      { emoji: '\u26AB',    it: 'Nero',      en: 'Black',  itArt: 'il' },
+    ]
+  },
+  {
+    name: 'Numeri', nameEn: 'Numbers', icon: '\u{1F522}',
+    bgHue: 210, color: '#2980b9', colorDark: '#1f6da0',
+    words: [
+      { emoji: '1\uFE0F\u20E3', it: 'Uno',     en: 'One',   itArt: "l'" },
+      { emoji: '2\uFE0F\u20E3', it: 'Due',     en: 'Two',   itArt: 'il' },
+      { emoji: '3\uFE0F\u20E3', it: 'Tre',     en: 'Three', itArt: 'il' },
+      { emoji: '4\uFE0F\u20E3', it: 'Quattro', en: 'Four',  itArt: 'il' },
+      { emoji: '5\uFE0F\u20E3', it: 'Cinque',  en: 'Five',  itArt: 'il' },
+      { emoji: '6\uFE0F\u20E3', it: 'Sei',     en: 'Six',   itArt: 'il' },
+      { emoji: '7\uFE0F\u20E3', it: 'Sette',   en: 'Seven', itArt: 'il' },
+      { emoji: '8\uFE0F\u20E3', it: 'Otto',    en: 'Eight', itArt: "l'" },
+    ]
+  },
+  {
+    name: 'Cibo', nameEn: 'Food', icon: '\u{1F34E}',
+    bgHue: 30, color: '#e67e22', colorDark: '#d35400',
+    words: [
+      { emoji: '\u{1F34E}', it: 'Mela',      en: 'Apple',      itArt: 'la' },
+      { emoji: '\u{1F34C}', it: 'Banana',    en: 'Banana',     itArt: 'la' },
+      { emoji: '\u{1F355}', it: 'Pizza',     en: 'Pizza',      itArt: 'la' },
+      { emoji: '\u{1F9C0}', it: 'Formaggio', en: 'Cheese',     itArt: 'il' },
+      { emoji: '\u{1F35E}', it: 'Pane',      en: 'Bread',      itArt: 'il' },
+      { emoji: '\u{1F95B}', it: 'Latte',     en: 'Milk',       itArt: 'il' },
+      { emoji: '\u{1F353}', it: 'Fragola',   en: 'Strawberry', itArt: 'la' },
+      { emoji: '\u{1F366}', it: 'Gelato',    en: 'Ice Cream',  itArt: 'il' },
+    ]
+  },
+  {
+    name: 'Corpo', nameEn: 'Body', icon: '\u{1F44B}',
+    bgHue: 340, color: '#e84393', colorDark: '#c23075',
+    words: [
+      { emoji: '\u{1F440}', it: 'Occhi',     en: 'Eyes',  itArt: 'gli' },
+      { emoji: '\u{1F443}', it: 'Naso',      en: 'Nose',  itArt: 'il' },
+      { emoji: '\u{1F444}', it: 'Bocca',     en: 'Mouth', itArt: 'la' },
+      { emoji: '\u{1F442}', it: 'Orecchie',  en: 'Ears',  itArt: 'le' },
+      { emoji: '\u270B',    it: 'Mano',      en: 'Hand',  itArt: 'la' },
+      { emoji: '\u{1F9B6}', it: 'Piede',     en: 'Foot',  itArt: 'il' },
+      { emoji: '\u2764\uFE0F', it: 'Cuore',  en: 'Heart', itArt: 'il' },
+      { emoji: '\u{1F60A}', it: 'Faccia',    en: 'Face',  itArt: 'la' },
+    ]
+  },
+  {
+    name: 'Famiglia', nameEn: 'Family', icon: '\u{1F46A}',
+    bgHue: 270, color: '#8e44ad', colorDark: '#6c3483',
+    words: [
+      { emoji: '\u{1F469}', it: 'Mamma',    en: 'Mom',     itArt: 'la' },
+      { emoji: '\u{1F468}', it: 'Pap\u00E0', en: 'Dad',    itArt: 'il' },
+      { emoji: '\u{1F476}', it: 'Bambino',  en: 'Baby',    itArt: 'il' },
+      { emoji: '\u{1F467}', it: 'Sorella',  en: 'Sister',  itArt: 'la' },
+      { emoji: '\u{1F466}', it: 'Fratello', en: 'Brother', itArt: 'il' },
+      { emoji: '\u{1F475}', it: 'Nonna',    en: 'Grandma', itArt: 'la' },
+      { emoji: '\u{1F474}', it: 'Nonno',    en: 'Grandpa', itArt: 'il' },
+      { emoji: '\u{1F3E0}', it: 'Casa',     en: 'Home',    itArt: 'la' },
+    ]
+  },
+];
+
+// ============================================================
+//  STATE
+// ============================================================
+let currentCategory = 0;
+let currentWordIdx  = -1; // -1 = no word highlighted
+let quizMode        = false;
+let quizTarget      = -1;
+let quizLang        = 'it';
+let speaking        = false; // prevent overlapping speech
+
+// ============================================================
+//  BUILD CATEGORY TABS
+// ============================================================
+const tabsContainer = document.getElementById('categoryTabs');
+
+categories.forEach((cat, i) => {
+  const tab = document.createElement('button');
+  tab.className = 'cat-tab' + (i === 0 ? ' active' : '');
+  tab.setAttribute('aria-label', cat.name);
+  tab.style.background = `linear-gradient(135deg, ${cat.color}, ${cat.colorDark})`;
+  tab.innerHTML = `<span>${cat.icon}</span> ${cat.name}`;
+  tab.addEventListener('click', () => switchCategory(i));
+  tabsContainer.appendChild(tab);
+});
+
+// ============================================================
+//  BUILD WORD GRID
+// ============================================================
+const grid = document.getElementById('wordGrid');
+
+function buildGrid() {
+  grid.innerHTML = '';
+  const cat = categories[currentCategory];
+  cat.words.forEach((w, i) => {
+    const card = document.createElement('div');
+    card.className = 'word-card dealing';
+    card.style.animationDelay = `${i * 0.06}s`;
+    card.setAttribute('role', 'button');
+    card.setAttribute('aria-label', `${w.it} / ${w.en}`);
+    card.dataset.idx = i;
+    card.innerHTML = `
+      <span class="word-emoji">${w.emoji}</span>
+      <div class="word-label word-label-it">
+        <span class="flag flag-it">\u{1F1EE}\u{1F1F9}</span>
+        <span class="word-text-it">${w.it}</span>
+      </div>
+      <div class="word-label word-label-en">
+        <span class="flag flag-en">\u{1F1EC}\u{1F1E7}</span>
+        <span class="word-text-en">${w.en}</span>
+      </div>
+      <div class="word-mystery">? ? ?</div>
+    `;
+    card.addEventListener('click', (e) => {
+      e.stopPropagation();
+      onWordTap(card, w, i);
+    });
+    card.addEventListener('touchstart', () => {}, { passive: true });
+    if (quizMode) card.classList.add('quiz-hidden');
+    grid.appendChild(card);
+  });
+  // Remove dealing class after animation
+  setTimeout(() => {
+    grid.querySelectorAll('.word-card').forEach(c => c.classList.remove('dealing'));
+  }, 600);
+}
+
+buildGrid();
+
+// ============================================================
+//  SWITCH CATEGORY
+// ============================================================
+function switchCategory(idx) {
+  if (idx === currentCategory) return;
+  currentCategory = idx;
+  currentWordIdx = -1;
+
+  // Update tab active states
+  tabsContainer.querySelectorAll('.cat-tab').forEach((t, i) => {
+    t.classList.toggle('active', i === idx);
+  });
+
+  // Update background color
+  const cat = categories[idx];
+  document.documentElement.style.setProperty('--bg-hue', cat.bgHue);
+  document.documentElement.style.setProperty('--bg-sat', '70%');
+  document.documentElement.style.setProperty('--bg-light', '90%');
+
+  // Play category switch sound
+  playSwoosh();
+
+  // Rebuild grid with deal animation
+  buildGrid();
+
+  // If quiz was active, restart with new category
+  if (quizMode) {
+    setTimeout(() => askQuizQuestion(), 800);
+  }
+}
+
+// ============================================================
+//  WORD TAP HANDLER
+// ============================================================
+function onWordTap(card, word, index) {
+  if (quizMode) {
+    handleQuizAnswer(card, word, index);
+    return;
+  }
+
+  // Bounce animation
+  card.classList.remove('bounce');
+  void card.offsetWidth;
+  card.classList.add('bounce');
+  setTimeout(() => card.classList.remove('bounce'), 700);
+
+  // Set as active word
+  currentWordIdx = index;
+  grid.querySelectorAll('.word-card').forEach(c => c.classList.remove('active-word'));
+  card.classList.add('active-word');
+
+  // Play pop sound
+  playPop();
+
+  // Confetti burst
+  const rect = card.getBoundingClientRect();
+  burstParticles(rect.left + rect.width / 2, rect.top + rect.height / 2, 16);
+
+  // Change background hue slightly based on word index
+  const cat = categories[currentCategory];
+  const hueShift = (index - 4) * 8;
+  document.documentElement.style.setProperty('--bg-hue', cat.bgHue + hueShift);
+
+  // Speak the word in both languages
+  if (!speaking) {
+    speaking = true;
+    speakBothLanguages(word.it, word.en, card).then(() => { speaking = false; });
+  }
+}
+
+// ============================================================
+//  QUIZ MODE
+// ============================================================
+const quizBanner = document.getElementById('quizBanner');
+const quizPromptEl = document.getElementById('quizPrompt');
+const quizBtn = document.getElementById('quizBtn');
+const celebration = document.getElementById('celebration');
+const celebText = document.getElementById('celebText');
+
+quizBtn.addEventListener('click', () => toggleQuiz());
+
+function toggleQuiz() {
+  quizMode = !quizMode;
+  quizBtn.classList.toggle('active', quizMode);
+
+  if (quizMode) {
+    // Hide all words
+    grid.querySelectorAll('.word-card').forEach(c => c.classList.add('quiz-hidden'));
+    currentWordIdx = -1;
+    grid.querySelectorAll('.word-card').forEach(c => c.classList.remove('active-word'));
+    playChime();
+    setTimeout(() => askQuizQuestion(), 600);
+  } else {
+    // Show all words, hide banner
+    grid.querySelectorAll('.word-card').forEach(c => {
+      c.classList.remove('quiz-hidden', 'correct', 'wrong', 'active-word');
+    });
+    quizBanner.classList.add('hidden');
+    quizTarget = -1;
+  }
+}
+
+function askQuizQuestion() {
+  if (!quizMode) return;
+
+  const cat = categories[currentCategory];
+  // Pick a random word that isn't the same as last
+  let idx;
+  do { idx = Math.floor(Math.random() * cat.words.length); }
+  while (idx === quizTarget && cat.words.length > 1);
+  quizTarget = idx;
+
+  // Alternate language
+  quizLang = quizLang === 'it' ? 'en' : 'it';
+  const word = cat.words[idx];
+
+  // Build prompt
+  let prompt, spokenPrompt;
+  if (quizLang === 'it') {
+    const art = word.itArt;
+    const artSep = art.endsWith("'") ? '' : ' ';
+    prompt = `\u{1F50E} Dov'\u00E8 ${art}${artSep}${word.it.toLowerCase()}?`;
+    spokenPrompt = `Dov'\u00E8 ${art}${artSep}${word.it.toLowerCase()}?`;
+  } else {
+    prompt = `\u{1F50D} Where is the ${word.en.toLowerCase()}?`;
+    spokenPrompt = `Where is the ${word.en.toLowerCase()}?`;
+  }
+
+  quizPromptEl.textContent = prompt;
+  quizBanner.classList.remove('hidden');
+
+  // Re-hide all cards and reset states
+  grid.querySelectorAll('.word-card').forEach(c => {
+    c.classList.add('quiz-hidden');
+    c.classList.remove('correct', 'wrong', 'active-word');
+  });
+
+  // Speak the question
+  speakWord(spokenPrompt, quizLang === 'it' ? 'it-IT' : 'en-US');
+}
+
+function handleQuizAnswer(card, word, index) {
+  if (quizTarget < 0) return;
+
+  const cat = categories[currentCategory];
+  const correct = cat.words[quizTarget];
+
+  if (word === correct) {
+    // CORRECT!
+    card.classList.remove('quiz-hidden');
+    card.classList.add('correct');
+
+    // Big confetti burst
+    const rect = card.getBoundingClientRect();
+    for (let i = 0; i < 3; i++) {
+      setTimeout(() => burstParticles(
+        rect.left + rect.width / 2 + (Math.random() - 0.5) * 100,
+        rect.top + rect.height / 2 + (Math.random() - 0.5) * 80,
+        20
+      ), i * 150);
+    }
+
+    // Play celebration sound
+    playCelebration();
+
+    // Show celebration overlay
+    const celebWords = ['BRAVO! \u2B50', 'SUPER! \u{1F31F}', 'GRANDE! \u{1F389}', 'WOW! \u{1F38A}', 'YES! \u{1F60D}'];
+    celebText.textContent = celebWords[Math.floor(Math.random() * celebWords.length)];
+    celebration.classList.add('show');
+    setTimeout(() => celebration.classList.remove('show'), 1800);
+
+    // Speak "Bravo!" then the word
+    speaking = true;
+    const bravoPromise = Math.random() > 0.5 ?
+      speakWord('Bravo!', 'it-IT') :
+      speakWord('Great job!', 'en-US');
+
+    bravoPromise.then(() => {
+      return new Promise(r => setTimeout(r, 300));
+    }).then(() => {
+      return speakBothLanguages(word.it, word.en, card);
+    }).then(() => {
+      speaking = false;
+      // Next question after delay
+      setTimeout(() => {
+        if (quizMode) askQuizQuestion();
+      }, 1500);
+    });
+
+  } else {
+    // WRONG — gentle feedback
+    card.classList.remove('wrong');
+    void card.offsetWidth;
+    card.classList.add('wrong');
+    setTimeout(() => card.classList.remove('wrong'), 600);
+
+    playBoop();
+
+    // Make the correct card pulse to give a hint
+    const correctCard = grid.querySelectorAll('.word-card')[quizTarget];
+    if (correctCard) {
+      correctCard.classList.add('active-word');
+      setTimeout(() => correctCard.classList.remove('active-word'), 2000);
+    }
+  }
+}
+
+// ============================================================
+//  STREAM DECK: NEXT / PREV / SPEAK HIGHLIGHTED WORD
+// ============================================================
+function navigateWord(direction) {
+  const cat = categories[currentCategory];
+  if (direction === 'next') {
+    currentWordIdx = (currentWordIdx + 1) % cat.words.length;
+  } else {
+    currentWordIdx = (currentWordIdx - 1 + cat.words.length) % cat.words.length;
+  }
+  highlightCurrentWord();
+}
+
+function highlightCurrentWord() {
+  if (currentWordIdx < 0) return;
+  const cards = grid.querySelectorAll('.word-card');
+  cards.forEach(c => c.classList.remove('active-word'));
+
+  const card = cards[currentWordIdx];
+  if (!card) return;
+  card.classList.add('active-word');
+
+  // Bounce it
+  card.classList.remove('bounce');
+  void card.offsetWidth;
+  card.classList.add('bounce');
+  setTimeout(() => card.classList.remove('bounce'), 700);
+
+  // Play pop
+  playPop();
+
+  // Confetti
+  const rect = card.getBoundingClientRect();
+  burstParticles(rect.left + rect.width / 2, rect.top + rect.height / 2, 12);
+
+  // Speak it
+  const word = categories[currentCategory].words[currentWordIdx];
+  if (!speaking) {
+    speaking = true;
+    speakBothLanguages(word.it, word.en, card).then(() => { speaking = false; });
+  }
+}
+
+function speakCurrentWord() {
+  if (currentWordIdx < 0) return;
+  const word = categories[currentCategory].words[currentWordIdx];
+  const card = grid.querySelectorAll('.word-card')[currentWordIdx];
+  if (!speaking && word) {
+    speaking = true;
+    speakBothLanguages(word.it, word.en, card).then(() => { speaking = false; });
+  }
+}
+
+// ============================================================
+//  SYNTHESIZED SOUND EFFECTS
+// ============================================================
+function playPop() {
+  const ctx = getAudioCtx();
+  const now = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  const osc2 = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = 'sine';
+  osc2.type = 'sine';
+  osc.frequency.setValueAtTime(880, now);
+  osc.frequency.exponentialRampToValueAtTime(1200, now + 0.05);
+  osc2.frequency.setValueAtTime(1320, now);
+  osc2.frequency.exponentialRampToValueAtTime(1760, now + 0.05);
+  gain.gain.setValueAtTime(0.2, now);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+  osc.connect(gain); osc2.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(now); osc.stop(now + 0.2);
+  osc2.start(now); osc2.stop(now + 0.2);
+}
+
+function playChime() {
+  const ctx = getAudioCtx();
+  const now = ctx.currentTime;
+  const notes = [523, 659, 784, 1047];
+  notes.forEach((f, i) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(f, now + i * 0.1);
+    gain.gain.setValueAtTime(0.18, now + i * 0.1);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.1 + 0.4);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(now + i * 0.1);
+    osc.stop(now + i * 0.1 + 0.45);
+  });
+}
+
+function playCelebration() {
+  const ctx = getAudioCtx();
+  const now = ctx.currentTime;
+  // Ascending major chord arpeggio
+  const notes = [523, 659, 784, 1047, 1319, 1568];
+  notes.forEach((f, i) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = i < 3 ? 'sine' : 'triangle';
+    osc.frequency.setValueAtTime(f, now + i * 0.07);
+    gain.gain.setValueAtTime(0.2, now + i * 0.07);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.07 + 0.5);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(now + i * 0.07);
+    osc.stop(now + i * 0.07 + 0.55);
+  });
+}
+
+function playBoop() {
+  const ctx = getAudioCtx();
+  const now = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(250, now);
+  osc.frequency.linearRampToValueAtTime(180, now + 0.15);
+  gain.gain.setValueAtTime(0.15, now);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+  osc.connect(gain).connect(ctx.destination);
+  osc.start(now); osc.stop(now + 0.3);
+}
+
+function playSwoosh() {
+  const ctx = getAudioCtx();
+  const now = ctx.currentTime;
+  const bufferSize = ctx.sampleRate * 0.3;
+  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+  const noise = ctx.createBufferSource();
+  noise.buffer = buffer;
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'bandpass';
+  filter.frequency.setValueAtTime(1000, now);
+  filter.frequency.exponentialRampToValueAtTime(4000, now + 0.15);
+  filter.frequency.exponentialRampToValueAtTime(800, now + 0.3);
+  filter.Q.value = 2;
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0.12, now);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+  noise.connect(filter).connect(gain).connect(ctx.destination);
+  noise.start(now); noise.stop(now + 0.35);
+}
+
+// ============================================================
+//  YOUTUBE JUKEBOX — educational Italian children's songs
+// ============================================================
+const playlist = [
+  { title: 'Se Sei Felice e Tu Lo Sai',     id: 'TsCGSBMnZP4' },
+  { title: 'Testa Spalle Ginocchia e Piedi', id: '1Z_GBbMdsuw' },
+  { title: 'I Colori',                       id: 'DCdLBuCaU5A' },
+  { title: 'Nella Vecchia Fattoria',         id: '4HywQgnGxRI' },
+  { title: 'Il Coccodrillo Come Fa',         id: 'mKAPO_nYV1o' },
+];
+
+let currentSong  = 0;
+let ytPlayer     = null;
+let ytReady      = false;
+let musicPlaying = false;
+let musicTimeout = null;
+
+const musicBtn  = document.getElementById('musicBtn');
+const skipBtn   = document.getElementById('skipBtn');
+const songLabel = document.getElementById('songLabel');
+
+// Load YouTube IFrame API
+(function loadYT() {
+  const tag = document.createElement('script');
+  tag.src = 'https://www.youtube.com/iframe_api';
+  tag.onerror = () => {};
+  document.head.appendChild(tag);
+})();
+
+window.onYouTubeIframeAPIReady = function() {
+  ytReady = true;
+  ytPlayer = new YT.Player('yt-player', {
+    height: '1', width: '1',
+    videoId: playlist[currentSong].id,
+    playerVars: { autoplay: 0, controls: 0, rel: 0, showinfo: 0, disablekb: 1, origin: window.location.origin },
+    events: {
+      onReady: (e) => {
+        try {
+          const iframe = e.target.getIframe();
+          iframe.tabIndex = -1;
+          iframe.setAttribute('tabindex', '-1');
+          iframe.blur();
+        } catch (_) {}
+      },
+      onStateChange: (e) => {
+        if (e.data === YT.PlayerState.ENDED) advanceSong();
+        if (e.data === YT.PlayerState.PLAYING) {
+          musicBtn.classList.add('playing');
+          musicBtn.querySelector('.btn-icon').textContent = '\u{1F50A}';
+          musicPlaying = true;
+          skipBtn.style.display = 'flex';
+          showSongLabel();
+        }
+        if (e.data === YT.PlayerState.PAUSED || e.data === YT.PlayerState.CUED) {
+          musicBtn.classList.remove('playing');
+          musicBtn.querySelector('.btn-icon').textContent = '\u{1F3B5}';
+          musicPlaying = false;
+        }
+      },
+      onError: () => advanceSong()
+    }
+  });
+};
+
+function showSongLabel() {
+  songLabel.textContent = '\u{1F3B5} ' + playlist[currentSong].title;
+  songLabel.classList.remove('hidden');
+}
+
+function advanceSong() {
+  currentSong = (currentSong + 1) % playlist.length;
+  if (ytPlayer && ytReady) {
+    ytPlayer.loadVideoById(playlist[currentSong].id);
+    showSongLabel();
+  }
+}
+
+musicBtn.addEventListener('click', () => {
+  getAudioCtx();
+  if (!ytReady || !ytPlayer) {
+    musicPlaying = !musicPlaying;
+    if (musicPlaying) {
+      musicBtn.classList.add('playing');
+      musicBtn.querySelector('.btn-icon').textContent = '\u{1F50A}';
+      playFallbackMelody();
+    } else {
+      musicBtn.classList.remove('playing');
+      musicBtn.querySelector('.btn-icon').textContent = '\u{1F3B5}';
+      clearTimeout(musicTimeout);
+    }
+    return;
+  }
+  const state = ytPlayer.getPlayerState();
+  if (state === YT.PlayerState.PLAYING) {
+    ytPlayer.pauseVideo();
+  } else {
+    ytPlayer.loadVideoById(playlist[currentSong].id);
+    showSongLabel();
+  }
+});
+
+skipBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  advanceSong();
+});
+
+// Fallback melody if YouTube unavailable
+const melodyNotes = [
+  {f:262,d:0.25},{f:330,d:0.25},{f:392,d:0.25},{f:523,d:0.5},
+  {f:494,d:0.25},{f:440,d:0.25},{f:392,d:0.5},{f:0,d:0.25},
+  {f:349,d:0.25},{f:440,d:0.25},{f:392,d:0.25},{f:349,d:0.25},
+  {f:330,d:0.5}, {f:294,d:0.25},{f:262,d:0.5}, {f:0,d:0.5},
+];
+
+function playFallbackMelody() {
+  if (!musicPlaying) return;
+  const ctx = getAudioCtx();
+  const now = ctx.currentTime;
+  let t = 0;
+  melodyNotes.forEach(n => {
+    if (n.f > 0) {
+      const osc = ctx.createOscillator();
+      const g = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(n.f, now + t);
+      g.gain.setValueAtTime(0.12, now + t);
+      g.gain.exponentialRampToValueAtTime(0.001, now + t + n.d);
+      osc.connect(g).connect(ctx.destination);
+      osc.start(now + t); osc.stop(now + t + n.d + 0.05);
+    }
+    t += n.d;
+  });
+  const total = melodyNotes.reduce((s, n) => s + n.d, 0) * 1000;
+  musicTimeout = setTimeout(() => { if (musicPlaying) playFallbackMelody(); }, total + 100);
+}
+
+// ============================================================
+//  PARTICLE / CONFETTI SYSTEM
+// ============================================================
+const particleCanvas = document.getElementById('particle-canvas');
+const pCtx = particleCanvas.getContext('2d');
+const particles = [];
+
+function resizeParticleCanvas() {
+  particleCanvas.width = window.innerWidth;
+  particleCanvas.height = window.innerHeight;
+}
+resizeParticleCanvas();
+
+const confettiColors = [
+  '#ff6b6b', '#ffa500', '#ffd93d', '#6bcb77', '#4d96ff',
+  '#9b59b6', '#ff6b9d', '#00d2d3', '#ff9ff3', '#f368e0'
+];
+
+function burstParticles(x, y, count) {
+  for (let i = 0; i < count; i++) {
+    const angle = (Math.PI * 2 * i) / count + Math.random() * 0.5;
+    const speed = 3 + Math.random() * 6;
+    const size = 5 + Math.random() * 8;
+    particles.push({
+      x, y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - 2,
+      size,
+      color: confettiColors[Math.floor(Math.random() * confettiColors.length)],
+      life: 1,
+      decay: 0.015 + Math.random() * 0.015,
+      rotation: Math.random() * Math.PI * 2,
+      rotSpeed: (Math.random() - 0.5) * 0.3,
+      shape: Math.random() > 0.5 ? 'circle' : 'rect'
+    });
+  }
+}
+
+function spawnSparkles(x, y, count) {
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 1 + Math.random() * 3;
+    particles.push({
+      x, y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      size: 2 + Math.random() * 4,
+      color: confettiColors[Math.floor(Math.random() * confettiColors.length)],
+      life: 1,
+      decay: 0.03 + Math.random() * 0.02,
+      rotation: 0, rotSpeed: 0,
+      shape: 'circle'
+    });
+  }
+}
+
+function animateParticles() {
+  pCtx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.x += p.vx; p.y += p.vy;
+    p.vy += 0.15; p.vx *= 0.99;
+    p.life -= p.decay;
+    p.rotation += p.rotSpeed;
+    if (p.life <= 0) { particles.splice(i, 1); continue; }
+    pCtx.save();
+    pCtx.globalAlpha = p.life;
+    pCtx.translate(p.x, p.y);
+    pCtx.rotate(p.rotation);
+    pCtx.fillStyle = p.color;
+    if (p.shape === 'circle') {
+      pCtx.beginPath();
+      pCtx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
+      pCtx.fill();
+    } else {
+      pCtx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2);
+    }
+    pCtx.restore();
+  }
+  if (particles.length > 600) particles.splice(0, particles.length - 600);
+  requestAnimationFrame(animateParticles);
+}
+animateParticles();
+
+// Background tap sparkles + tiny sound
+document.body.addEventListener('click', (e) => {
+  spawnSparkles(e.clientX, e.clientY, 6);
+  const ctx = getAudioCtx();
+  const now = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(800 + Math.random() * 600, now);
+  gain.gain.setValueAtTime(0.05, now);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+  osc.connect(gain).connect(ctx.destination);
+  osc.start(now); osc.stop(now + 0.12);
+});
+
+// ============================================================
+//  BACKGROUND FLOATING ELEMENTS
+// ============================================================
+const bgCanvas = document.getElementById('bg-canvas');
+const bgCtx = bgCanvas.getContext('2d');
+
+function resizeBgCanvas() {
+  bgCanvas.width = window.innerWidth;
+  bgCanvas.height = window.innerHeight;
+}
+resizeBgCanvas();
+
+const floaters = [];
+const floaterEmojis = ['\u2728', '\u2B50', '\u{1F31F}', '\u2601\uFE0F', '\u{1F4AB}', '\u2601\uFE0F', '\u{1FA84}', '\u{1F308}'];
+
+for (let i = 0; i < 14; i++) {
+  floaters.push({
+    x: Math.random() * window.innerWidth,
+    y: Math.random() * window.innerHeight,
+    emoji: floaterEmojis[Math.floor(Math.random() * floaterEmojis.length)],
+    size: 18 + Math.random() * 28,
+    speedX: 0.2 + Math.random() * 0.5,
+    wobblePhase: Math.random() * Math.PI * 2,
+    wobbleSpeed: 0.01 + Math.random() * 0.02,
+    opacity: 0.15 + Math.random() * 0.25
+  });
+}
+
+function animateBackground() {
+  bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+  floaters.forEach(f => {
+    f.x += f.speedX;
+    f.wobblePhase += f.wobbleSpeed;
+    const wobbleY = Math.sin(f.wobblePhase) * 12;
+    if (f.x > bgCanvas.width + 60) f.x = -60;
+    bgCtx.save();
+    bgCtx.globalAlpha = f.opacity;
+    bgCtx.font = `${f.size}px serif`;
+    bgCtx.fillText(f.emoji, f.x, f.y + wobbleY);
+    bgCtx.restore();
+  });
+  requestAnimationFrame(animateBackground);
+}
+animateBackground();
+
+// ============================================================
+//  RESIZE HANDLER
+// ============================================================
+window.addEventListener('resize', () => {
+  resizeBgCanvas();
+  resizeParticleCanvas();
+});
+
+// ============================================================
+//  KEYBOARD FOCUS GUARD (same pattern as liocorni)
+// ============================================================
+document.body.tabIndex = 0;
+document.body.focus({ preventScroll: true });
+document.addEventListener('click', () => {
+  document.body.focus({ preventScroll: true });
+});
+setInterval(() => {
+  if (document.activeElement && document.activeElement.tagName === 'IFRAME') {
+    document.activeElement.blur();
+    document.body.focus({ preventScroll: true });
+  }
+}, 250);
+
+// ============================================================
+//  KEYBOARD SUPPORT
+//  1-6  → categories
+//  ←/→  → prev/next word
+//  SPACE → repeat pronunciation
+//  Q    → toggle quiz
+//  M    → music on/off
+//  N    → next song
+// ============================================================
+window.addEventListener('keydown', (e) => {
+  if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+
+  const key = e.key;
+
+  // 1-6 → categories
+  if (/^[1-6]$/.test(key)) {
+    switchCategory(parseInt(key) - 1);
+    return;
+  }
+
+  // 7-9, 0 → tap word cards directly (in current category)
+  if (/^[7-9]$/.test(key)) {
+    const idx = parseInt(key) - 7; // 7→0, 8→1, 9→2
+    const cards = grid.querySelectorAll('.word-card');
+    if (idx < cards.length) {
+      const w = categories[currentCategory].words[idx];
+      onWordTap(cards[idx], w, idx);
+    }
+    return;
+  }
+  if (key === '0') {
+    const idx = 3;
+    const cards = grid.querySelectorAll('.word-card');
+    if (idx < cards.length) {
+      const w = categories[currentCategory].words[idx];
+      onWordTap(cards[idx], w, idx);
+    }
+    return;
+  }
+
+  if (key === 'ArrowRight' || key === 'l' || key === 'L') { navigateWord('next'); return; }
+  if (key === 'ArrowLeft'  || key === 'h' || key === 'H') { navigateWord('prev'); return; }
+  if (key === ' ')  { e.preventDefault(); speakCurrentWord(); return; }
+  if (key === 'q' || key === 'Q') { toggleQuiz(); return; }
+  if (key === 'm' || key === 'M') { musicBtn.click(); return; }
+  if (key === 'n' || key === 'N') { advanceSong(); return; }
+});
+
+// ============================================================
+//  STREAM DECK BRIDGE (SSE from localhost server)
+// ============================================================
+if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+  function connectSSE() {
+    const src = new EventSource('/events');
+    src.onmessage = (e) => {
+      try {
+        const msg = JSON.parse(e.data);
+        const cards = grid.querySelectorAll('.word-card');
+
+        switch (msg.type) {
+          case 'category':
+            if (msg.idx >= 0 && msg.idx < categories.length) switchCategory(msg.idx);
+            break;
+          case 'next':
+            navigateWord('next');
+            break;
+          case 'prev':
+            navigateWord('prev');
+            break;
+          case 'speak':
+            speakCurrentWord();
+            break;
+          case 'quiz':
+            toggleQuiz();
+            break;
+          case 'music':
+            musicBtn.click();
+            break;
+          case 'skip':
+            advanceSong();
+            break;
+          case 'word':
+            // Directly tap a specific word by index
+            if (msg.idx >= 0 && msg.idx < categories[currentCategory].words.length) {
+              const w = categories[currentCategory].words[msg.idx];
+              onWordTap(cards[msg.idx], w, msg.idx);
+            }
+            break;
+        }
+      } catch (_) {}
+    };
+    src.onerror = () => { src.close(); setTimeout(connectSSE, 3000); };
+  }
+  connectSSE();
+}
+
+// Prevent zoom on iOS
+document.addEventListener('gesturestart', e => e.preventDefault());
+document.addEventListener('gesturechange', e => e.preventDefault());
+</script>
+</body>
+</html>
